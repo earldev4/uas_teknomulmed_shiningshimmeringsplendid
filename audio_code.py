@@ -22,9 +22,7 @@ KATEGORI = {
 }
 
 def buat_audio_wav(teks, bahasa, file_path_wav):
-    """
-    Membuat file audio .wav dari teks menggunakan gTTS dan pydub.
-    """
+
     # Path sementara untuk file .mp3
     file_path_mp3 = file_path_wav.replace('.wav', '.mp3')
     
@@ -45,7 +43,6 @@ def buat_audio_wav(teks, bahasa, file_path_wav):
     except FileNotFoundError:
         print("\n[ERROR] FFmpeg tidak ditemukan!")
         print("Pastikan FFmpeg sudah terinstal dan ada di PATH sistem Anda.")
-        print("Silakan cek instruksi di: https://ffmpeg.org/download.html")
         # Hentikan eksekusi jika FFmpeg tidak ada
         exit()
     except Exception as e:
@@ -54,12 +51,9 @@ def buat_audio_wav(teks, bahasa, file_path_wav):
         if os.path.exists(file_path_mp3):
             os.remove(file_path_mp3)
 
-# -----------------------------------------------------
-# MAIN SCRIPT
-# -----------------------------------------------------
+
 print("Memulai proses pembuatan audio...")
 
-# Loop melalui setiap kategori
 for nama_kategori, data in KATEGORI.items():
     
     output_dir = data['path']
