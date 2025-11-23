@@ -1,8 +1,24 @@
 import cv2
 import mediapipe as mp
-# import random
+
 
 """
+# Jika ingin mencoba game sederhan dan mencari tau logikanya, bisa memakai kode dibawah ini:
+1. Untuk bagian (Contoh Bahan untuk buat elemen (UI))
+Dapat ditaruh di awal, biar enak taruh aja dibawah library
+
+2. Untuk bagian (Logika ketika telunjuk menyentuh kotak)
+Dapat ditaruh didalam "for hand_landmarks in results.multi_hand_landmarks:" dan 
+taruh setelah code "cv2.circle(frame, (cx, cy), 10, (255, 255, 0), cv2.FILLED)"
+
+3. Untuk bagian (Logika untuk menggambar kotaknya)
+Dapat ditaruh didalam "if results.multi_hand_landmarks:" dan 
+ditaruh sebelum "cv2.imshow("MediaPipe Hand Tracking", frame)", code "cv2.imshow("MediaPipe Hand Tracking", 
+frame)" bisa di comment saja.
+------------------------------------------------------------------------------------------------------------
+# Library untuk kotak muncul nya random
+import random
+
 # Contoh Bahan untuk buat elemen (UI)
 box_size = 100
 box_color = (0, 0, 255)
