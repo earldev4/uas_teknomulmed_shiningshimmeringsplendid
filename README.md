@@ -31,7 +31,7 @@ Filter ini cocok untuk melatih pendengaran dan pengucapan terhadap suatu kosakat
       <b>122140015</b>
     </td>
     <td align="center">
-      <img src="assets/image/faris.jpg" width="180"/><br/>
+      <img src="assets/image/faris.jpeg" width="180"/><br/>
       <a href="https://github.com/FARIS122140021">Faris Pratama</a><br/>
       <b>122140021</b>
     </td>
