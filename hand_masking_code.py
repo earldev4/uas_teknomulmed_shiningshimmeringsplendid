@@ -9,7 +9,7 @@ import os
 # =========================
 
 # Load gambar tombol (PNG dengan alpha)
-button_path = os.path.join(os.getcwd(),"assets/image/buttons", "testaja.png")
+button_path = os.path.join(os.getcwd(),"assets/image/buttons", "Guess The Word.png")
 button_img = cv2.imread(button_path, cv2.IMREAD_UNCHANGED)  # BGRA
 
 if button_img is None:
