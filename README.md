@@ -104,17 +104,46 @@ Setelah itu akan muncul folder dengan nama seperti nama repositori ini, masuk ke
 3. Aktivasi Environment
 Selanjutnya, pada terminal lakukan aktivasi environment dengan perintah berikut:
 
-
-a. Linux/MacOS
+<ul>
+  <li>Linux/MacOS</li>
+  
 ```
 source .venv\bin\activate
 ```
-b. Windows
+  <li>Windows</li>
+  
 ```
 .venv\Scripts\activate
 ```
+</ul>
 
-## 📋 Instruksi dan Aturan Permainan
+4. Instal semua dependensi yang diperlukan
+Lakukan instalasi dependensi dari file requirements.txt pada terminal dengan perintah berikut:
+```
+pip install -r requirements.txt
+```
+
+5. Jalankan Program
+Langkah terakhir yaitu menjalankan filter pada terminal dengan perintah berikut:
+```
+python main.py
+```
+
+## 📋 Petunjuk Bermain
+<ol>
+  <li>Jalankan program dan pastikan webcam aktif</li>
+  <li>Akan muncul tulisan "Guess The World" dan tombol "Play", tekan tombol "Play" untuk memulai permainan</li>
+  <li>Kemudian, pilih kategori yang akan anda mainkan dari ketiga kategori yaitu Hewan, Buah, dan Kendaraan</li>
+  <li>Setelah permainan dimulai, telapak tangan Anda akan terdeteksi oleh filter dan filter akan menampilkan pilihan jawaban serta tombol untuk mengulang audio. Akan ada jeda 2 detik sebelum audio diputar</li>
+  <li>Jawab soal dengan menunjukan jari ke kotak jawaban, jawaban yang benar akan memunculkan suara "TING" dan jawaban yang salah akan memunculkan suara "TOT", paham lah ya, yakan</li>
+  <li>PERLU DIKETAHUI BAHWA kesempatan mendengarkan audio kembali hanya satu kali :P</li>
+  <li>Nilai anda akan muncul pada skor di pojok kanan atas, nilai akan bertambah jika jawaban benar dan jika jawaban salah tidak terjadi penambahan skor, aman kok gk dikurangin</li>
+  <li>TIDAK ADA batasan waktu pada setiap pertanyaan, dan tidak ada skip ke pertanyaan. Jadi kamu antara bisa menjawab benar, menjawab salah karena bingung, atau merenungi apa audio yang tadi diputar untuk sisa hidupmu :P </li>
+  <li>Soal terdiri dari 10 pertanyaan acak dengan kombinasi 5 bahasa Indonesia dan 5 bahasa Inggris. Pastikan nilai TOEFL mu minimal diatas 500</li>
+  <li>Setelah 10 pertanyaan selesai dijawab, skor akhir akan ditampilkan</li>
+  <li>Tekan tombol "Mainkan lagi" untuk mengulang permainan, atau jika sudah puas atau bosan tekan tombol Q pada keyboard untuk mengakhiri filter</li>
+</ol>
+
 ## 📋 Logbook Mingguan
 ## 📋 Laporan
 ## 📋 Demo Program
