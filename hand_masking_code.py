@@ -342,11 +342,15 @@ while True:
         
         # Draw feedback if active
         if show_feedback and feedback_timer > 0:
-            feedback_size = cv2.getTextSize(feedback_text, cv2.FONT_HERSHEY_DUPLEX, 2, 3)[0]
+            feedback_size = cv2.getTextSize(feedback_text, cv2.FONT_HERSHEY_DUPLEX, 2.5, 4)[0]
             feedback_x = (w_frame - feedback_size[0]) // 2
-            feedback_y = h_frame // 2
+            feedback_y = 200  # Naikkan posisi agar tidak tertutup
+            
+            # Draw shadow/outline untuk kejelasan
+            cv2.putText(frame, feedback_text, (feedback_x + 3, feedback_y + 3), 
+                       cv2.FONT_HERSHEY_DUPLEX, 2.5, (0, 0, 0), 5)
             cv2.putText(frame, feedback_text, (feedback_x, feedback_y), 
-                       cv2.FONT_HERSHEY_DUPLEX, 2, feedback_color, 3)
+                       cv2.FONT_HERSHEY_DUPLEX, 2.5, feedback_color, 4)
         
         # Create option buttons
         if len(option_buttons) != len(current_options):
