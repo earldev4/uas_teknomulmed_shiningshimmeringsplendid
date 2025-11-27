@@ -5,14 +5,8 @@ import random
 import os
 import pygame
 
-# =========================
-# INISIALISASI PYGAME AUDIO
-# =========================
 pygame.mixer.init()
 
-# =========================
-# GAME STATE
-# =========================
 class GameState:
     MENU = "menu"
     CATEGORY = "category"
@@ -22,17 +16,12 @@ current_state = GameState.MENU
 selected_category = None
 current_word = None
 current_options = []
+score = 0
 
-# =========================
-# PATH ASSET
-# =========================
 BASE_PATH = os.getcwd()
 IMAGE_PATH = os.path.join(BASE_PATH, "assets", "image", "buttons")
 AUDIO_PATH = os.path.join(BASE_PATH, "data_audio")
 
-# =========================
-# DATA KATEGORI & KATA
-# =========================
 word_data = {
     "Hewan": [
         {"word": "Anjing", "audio": "anjing.wav"},
@@ -54,26 +43,17 @@ word_data = {
     ]
 }
 
-# =========================
-# FUNGSI AUDIO
-# =========================
 def play_word_audio(category, audio_file):
-    """Play audio untuk kata"""
     try:
         audio_path = os.path.join(AUDIO_PATH, category.lower(), audio_file)
         if os.path.exists(audio_path):
             pygame.mixer.music.load(audio_path)
             pygame.mixer.music.play()
-        else:
-            print(f"Audio tidak ditemukan: {audio_path}")
     except Exception as e:
         print(f"Error playing audio: {e}")
 
-# =========================
-# FUNGSI GENERATE SOAL
-# =========================
 def generate_question(category):
-    global current_word, current_options
+    global current_word, current_options, option_buttons
     
     words = word_data[category]
     selected_words = random.sample(words, 4)
@@ -82,12 +62,10 @@ def generate_question(category):
     current_options = selected_words.copy()
     random.shuffle(current_options)
     
+    option_buttons = []
+    
     play_word_audio(category, correct["audio"])
-    print(f"Question generated: {correct['word']}")
 
-# =========================
-# BUTTON CLASS
-# =========================
 class Button:
     def __init__(self, x, y, width, height, text, color=(100, 150, 255)):
         self.x = x
@@ -125,9 +103,6 @@ class Button:
     def check_hover(self, x, y):
         self.is_hovered = self.is_clicked(x, y)
 
-# =========================
-# SETUP MEDIAPIPE & KAMERA
-# =========================
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 
@@ -150,9 +125,6 @@ if ret:
 else:
     h_frame, w_frame = 480, 640
 
-# =========================
-# CREATE BUTTONS
-# =========================
 play_button = Button(w_frame//2 - 125, h_frame//2 - 50, 250, 100, "PLAY!")
 
 category_buttons = [
@@ -166,12 +138,9 @@ option_buttons = []
 click_cooldown = 0
 CLICK_COOLDOWN_MAX = 20
 
-print("Version 4: Game data and audio system added")
+print("Version 5: Option buttons and answer checking added")
 print("Tekan 'q' untuk keluar.")
 
-# =========================
-# MAIN LOOP
-# =========================
 while True:
     success, frame = cap.read()
     if not success:
@@ -226,13 +195,37 @@ while True:
         cv2.putText(frame, "Dengarkan kata...", (w_frame//2 - 150, 80), 
                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
-        # Display options as text
-        for i, option in enumerate(current_options):
-            y_pos = 200 + (i * 100)
-            cv2.putText(frame, f"{i+1}. {option['word']}", (50, y_pos), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
+        score_text = f"Skor: {score}"
+        cv2.putText(frame, score_text, (w_frame - 200, 80), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+        
+        # Create option buttons
+        if len(option_buttons) != len(current_options):
+            option_buttons = []
+            for i, option in enumerate(current_options):
+                btn_x = 50 if i < 2 else w_frame - 250
+                btn_y = 150 if i % 2 == 0 else 350
+                option_buttons.append(
+                    Button(btn_x, btn_y, 200, 150, option["word"])
+                )
+        
+        # Draw and check option buttons
+        for i, btn in enumerate(option_buttons):
+            if finger_x and finger_y:
+                btn.check_hover(finger_x, finger_y)
+                if btn.is_clicked(finger_x, finger_y) and click_cooldown == 0:
+                    if current_options[i] == current_word:
+                        print("✓ Benar!")
+                        score += 1
+                        generate_question(selected_category)
+                    else:
+                        print("✗ Salah!")
+                        play_word_audio(selected_category, current_word["audio"])
+                    click_cooldown = CLICK_COOLDOWN_MAX
+            
+            btn.draw(frame)
     
-    cv2.imshow("Guess The Word Game - v4", frame)
+    cv2.imshow("Guess The Word Game - v5", frame)
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
