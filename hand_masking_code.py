@@ -23,6 +23,10 @@ selected_category = None
 current_word = None
 current_options = []
 score = 0
+show_feedback = False
+feedback_text = ""
+feedback_color = (0, 255, 0)
+feedback_timer = 0
 
 # =========================
 # PATH ASSET
