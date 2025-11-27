@@ -279,6 +279,12 @@ while True:
     if click_cooldown > 0:
         click_cooldown -= 1
     
+    # Decrease feedback timer
+    if feedback_timer > 0:
+        feedback_timer -= 1
+    else:
+        show_feedback = False
+    
     # Get finger position
     finger_x, finger_y = None, None
     
