@@ -1,7 +1,14 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import random
 import os
+import pygame
+
+# =========================
+# INISIALISASI PYGAME AUDIO
+# =========================
+pygame.mixer.init()
 
 # =========================
 # GAME STATE
@@ -13,12 +20,70 @@ class GameState:
     
 current_state = GameState.MENU
 selected_category = None
+current_word = None
+current_options = []
 
 # =========================
 # PATH ASSET
 # =========================
 BASE_PATH = os.getcwd()
 IMAGE_PATH = os.path.join(BASE_PATH, "assets", "image", "buttons")
+AUDIO_PATH = os.path.join(BASE_PATH, "data_audio")
+
+# =========================
+# DATA KATEGORI & KATA
+# =========================
+word_data = {
+    "Hewan": [
+        {"word": "Anjing", "audio": "anjing.wav"},
+        {"word": "Dolphin", "audio": "dolphin.wav"},
+        {"word": "Gajah", "audio": "gajah.wav"},
+        {"word": "Kucing", "audio": "kucing.wav"}
+    ],
+    "Buah": [
+        {"word": "Apel", "audio": "apel.wav"},
+        {"word": "Pisang", "audio": "pisang.wav"},
+        {"word": "Jeruk", "audio": "jeruk.wav"},
+        {"word": "Mangga", "audio": "mangga.wav"}
+    ],
+    "Kendaraan": [
+        {"word": "Mobil", "audio": "mobil.wav"},
+        {"word": "Motor", "audio": "motor.wav"},
+        {"word": "Bus", "audio": "bus.wav"},
+        {"word": "Kereta", "audio": "kereta.wav"}
+    ]
+}
+
+# =========================
+# FUNGSI AUDIO
+# =========================
+def play_word_audio(category, audio_file):
+    """Play audio untuk kata"""
+    try:
+        audio_path = os.path.join(AUDIO_PATH, category.lower(), audio_file)
+        if os.path.exists(audio_path):
+            pygame.mixer.music.load(audio_path)
+            pygame.mixer.music.play()
+        else:
+            print(f"Audio tidak ditemukan: {audio_path}")
+    except Exception as e:
+        print(f"Error playing audio: {e}")
+
+# =========================
+# FUNGSI GENERATE SOAL
+# =========================
+def generate_question(category):
+    global current_word, current_options
+    
+    words = word_data[category]
+    selected_words = random.sample(words, 4)
+    correct = random.choice(selected_words)
+    current_word = correct
+    current_options = selected_words.copy()
+    random.shuffle(current_options)
+    
+    play_word_audio(category, correct["audio"])
+    print(f"Question generated: {correct['word']}")
 
 # =========================
 # BUTTON CLASS
@@ -61,7 +126,7 @@ class Button:
         self.is_hovered = self.is_clicked(x, y)
 
 # =========================
-# SETUP MEDIAPIPE HANDS
+# SETUP MEDIAPIPE & KAMERA
 # =========================
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -73,9 +138,6 @@ hands = mp_hands.Hands(
     min_tracking_confidence=0.7
 )
 
-# =========================
-# SETUP KAMERA
-# =========================
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
@@ -99,10 +161,12 @@ category_buttons = [
     Button(w_frame//2 - 150, h_frame//2 + 80, 300, 100, "Kendaraan")
 ]
 
+option_buttons = []
+
 click_cooldown = 0
 CLICK_COOLDOWN_MAX = 20
 
-print("Version 3: Category selection added")
+print("Version 4: Game data and audio system added")
 print("Tekan 'q' untuk keluar.")
 
 # =========================
@@ -137,7 +201,6 @@ while True:
             
             cv2.circle(frame, (finger_x, finger_y), 15, (255, 255, 0), cv2.FILLED)
     
-    # MENU STATE
     if current_state == GameState.MENU:
         if finger_x and finger_y:
             play_button.check_hover(finger_x, finger_y)
@@ -147,7 +210,6 @@ while True:
         
         play_button.draw(frame)
     
-    # CATEGORY STATE
     elif current_state == GameState.CATEGORY:
         for btn in category_buttons:
             if finger_x and finger_y:
@@ -155,20 +217,26 @@ while True:
                 if btn.is_clicked(finger_x, finger_y) and click_cooldown == 0:
                     selected_category = btn.text
                     current_state = GameState.PLAYING
+                    generate_question(selected_category)
                     click_cooldown = CLICK_COOLDOWN_MAX
-                    print(f"Selected: {selected_category}")
             
             btn.draw(frame)
     
-    # PLAYING STATE (temporary)
     elif current_state == GameState.PLAYING:
-        cv2.putText(frame, f"Playing: {selected_category}", (50, h_frame//2), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 3)
+        cv2.putText(frame, "Dengarkan kata...", (w_frame//2 - 150, 80), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        
+        # Display options as text
+        for i, option in enumerate(current_options):
+            y_pos = 200 + (i * 100)
+            cv2.putText(frame, f"{i+1}. {option['word']}", (50, y_pos), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
     
-    cv2.imshow("Guess The Word Game - v3", frame)
+    cv2.imshow("Guess The Word Game - v4", frame)
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
 cv2.destroyAllWindows()
+pygame.mixer.quit()
