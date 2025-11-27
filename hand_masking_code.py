@@ -335,6 +335,19 @@ while True:
         cv2.putText(frame, speaker_text, (w_frame//2 - 150, 80), 
                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
+        # Draw score
+        score_text = f"Skor: {score}"
+        cv2.putText(frame, score_text, (w_frame - 200, 80), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+        
+        # Draw feedback if active
+        if show_feedback and feedback_timer > 0:
+            feedback_size = cv2.getTextSize(feedback_text, cv2.FONT_HERSHEY_DUPLEX, 2, 3)[0]
+            feedback_x = (w_frame - feedback_size[0]) // 2
+            feedback_y = h_frame // 2
+            cv2.putText(frame, feedback_text, (feedback_x, feedback_y), 
+                       cv2.FONT_HERSHEY_DUPLEX, 2, feedback_color, 3)
+        
         # Create option buttons
         if len(option_buttons) != len(current_options):
             option_buttons = []
@@ -354,13 +367,22 @@ while True:
                     if current_options[i] == current_word:
                         print("✓ Benar!")
                         score += 1
+                        show_feedback = True
+                        feedback_text = "BENAR! +1"
+                        feedback_color = (0, 255, 0)
+                        feedback_timer = 30
+                        # Generate new question after delay
+                        click_cooldown = CLICK_COOLDOWN_MAX
                         generate_question(selected_category)
                     else:
                         print("✗ Salah!")
+                        show_feedback = True
+                        feedback_text = "SALAH!"
+                        feedback_color = (0, 0, 255)
+                        feedback_timer = 30
                         # Replay audio
                         play_word_audio(selected_category, current_word["audio"])
-                    
-                    click_cooldown = CLICK_COOLDOWN_MAX
+                        click_cooldown = CLICK_COOLDOWN_MAX
             
             btn.draw(frame)
         
@@ -371,6 +393,7 @@ while True:
             if back_btn.is_clicked(finger_x, finger_y) and click_cooldown == 0:
                 current_state = GameState.CATEGORY
                 pygame.mixer.music.stop()
+                score = 0
                 click_cooldown = CLICK_COOLDOWN_MAX
         back_btn.draw(frame)
     
