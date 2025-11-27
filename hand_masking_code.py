@@ -196,15 +196,21 @@ def generate_question(category):
     global current_word, current_options, option_buttons
     
     words = word_data[category]
-    correct = random.choice(words)
+    
+    # Pastikan minimal 4 kata berbeda
+    if len(words) < 4:
+        print(f"Warning: Kategori {category} memiliki kurang dari 4 kata!")
+        return
+    
+    # Pilih 4 kata unik secara acak
+    selected_words = random.sample(words, 4)
+    
+    # Pilih satu sebagai jawaban benar
+    correct = random.choice(selected_words)
     current_word = correct
     
-    # Ambil 3 jawaban salah
-    wrong_answers = [w for w in words if w != correct]
-    selected_wrong = random.sample(wrong_answers, min(3, len(wrong_answers)))
-    
-    # Gabung dan acak
-    current_options = [correct] + selected_wrong
+    # Opsi adalah 4 kata yang sudah dipilih (sudah pasti unik)
+    current_options = selected_words.copy()
     random.shuffle(current_options)
     
     # Reset option buttons agar gambar berubah
