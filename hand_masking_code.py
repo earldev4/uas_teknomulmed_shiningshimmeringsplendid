@@ -12,6 +12,7 @@ class GameState:
     PLAYING = "playing"
     
 current_state = GameState.MENU
+selected_category = None
 
 # =========================
 # PATH ASSET
@@ -45,7 +46,6 @@ class Button:
                      (self.x + self.width, self.y + self.height), 
                      (255, 255, 255), 2)
         
-        # Draw text
         font = cv2.FONT_HERSHEY_SIMPLEX
         text_size = cv2.getTextSize(self.text, font, 1, 2)[0]
         text_x = self.x + (self.width - text_size[0]) // 2
@@ -93,10 +93,16 @@ else:
 # =========================
 play_button = Button(w_frame//2 - 125, h_frame//2 - 50, 250, 100, "PLAY!")
 
+category_buttons = [
+    Button(w_frame//2 - 150, h_frame//2 - 180, 300, 100, "Hewan"),
+    Button(w_frame//2 - 150, h_frame//2 - 50, 300, 100, "Buah"),
+    Button(w_frame//2 - 150, h_frame//2 + 80, 300, 100, "Kendaraan")
+]
+
 click_cooldown = 0
 CLICK_COOLDOWN_MAX = 20
 
-print("Version 2: Basic button interaction added")
+print("Version 3: Category selection added")
 print("Tekan 'q' untuk keluar.")
 
 # =========================
@@ -138,15 +144,28 @@ while True:
             if play_button.is_clicked(finger_x, finger_y) and click_cooldown == 0:
                 current_state = GameState.CATEGORY
                 click_cooldown = CLICK_COOLDOWN_MAX
-                print("Moving to CATEGORY")
         
         play_button.draw(frame)
     
-    # Display current state
-    cv2.putText(frame, f"State: {current_state}", (10, 30), 
-               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    # CATEGORY STATE
+    elif current_state == GameState.CATEGORY:
+        for btn in category_buttons:
+            if finger_x and finger_y:
+                btn.check_hover(finger_x, finger_y)
+                if btn.is_clicked(finger_x, finger_y) and click_cooldown == 0:
+                    selected_category = btn.text
+                    current_state = GameState.PLAYING
+                    click_cooldown = CLICK_COOLDOWN_MAX
+                    print(f"Selected: {selected_category}")
+            
+            btn.draw(frame)
     
-    cv2.imshow("Guess The Word Game - v2", frame)
+    # PLAYING STATE (temporary)
+    elif current_state == GameState.PLAYING:
+        cv2.putText(frame, f"Playing: {selected_category}", (50, h_frame//2), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 3)
+    
+    cv2.imshow("Guess The Word Game - v3", frame)
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
