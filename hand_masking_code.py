@@ -193,7 +193,7 @@ def play_word_audio(category, audio_file):
 # FUNGSI GENERATE SOAL
 # =========================
 def generate_question(category):
-    global current_word, current_options
+    global current_word, current_options, option_buttons
     
     words = word_data[category]
     correct = random.choice(words)
@@ -206,6 +206,9 @@ def generate_question(category):
     # Gabung dan acak
     current_options = [correct] + selected_wrong
     random.shuffle(current_options)
+    
+    # Reset option buttons agar gambar berubah
+    option_buttons = []
     
     # Play audio
     play_word_audio(category, correct["audio"])
