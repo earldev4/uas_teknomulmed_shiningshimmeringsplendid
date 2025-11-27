@@ -52,12 +52,12 @@ word_data = {
         {"word": "Singa", "audio": "singa.wav", "image": "Hewan - Singa.png"}
     ],
     "Buah": [
-        {"word": "Apel", "audio": "apel.wav", "image": "Buah - Pisang.png"},
-        {"word": "Grape", "audio": "grape.wav", "image": "Buah - Pisang.png"},
-        {"word": "Jeruk", "audio": "jeruk.wav", "image": "Buah - Pisang.png"},
-        {"word": "Kiwi", "audio": "kiwi.wav", "image": "Buah - Pisang.png"},
-        {"word": "Mangga", "audio": "mangga.wav", "image": "Buah - Pisang.png"},
-        {"word": "Papaya", "audio": "papaya.wav", "image": "Buah - Pisang.png"},
+        {"word": "Apel", "audio": "apel.wav", "image": "Buah - Apel.png"},
+        {"word": "Grape", "audio": "grape.wav", "image": "Buah - Grape.png"},
+        {"word": "Jeruk", "audio": "jeruk.wav", "image": "Buah - Jeruk.png"},
+        {"word": "Kiwi", "audio": "kiwi.wav", "image": "Buah - Kiwi.png"},
+        {"word": "Mangga", "audio": "mangga.wav", "image": "Buah - Mangga.png"},
+        {"word": "Papaya", "audio": "papaya.wav", "image": "Buah - Papaya.png"},
         {"word": "Pineapple", "audio": "pineapple.wav", "image": "Buah - Pineapple.png"},
         {"word": "Pisang", "audio": "pisang.wav", "image": "Buah - Pisang.png"},
         {"word": "Semangka", "audio": "semangka.wav", "image": "Buah - Semangka.png"},
@@ -342,15 +342,14 @@ while True:
         
         # Draw feedback if active
         if show_feedback and feedback_timer > 0:
-            feedback_size = cv2.getTextSize(feedback_text, cv2.FONT_HERSHEY_DUPLEX, 2.5, 4)[0]
-            feedback_x = (w_frame - feedback_size[0]) // 2
-            feedback_y = 200  # Naikkan posisi agar tidak tertutup
+            feedback_x = 50  # Posisi kiri, sejajar dengan area aman
+            feedback_y = 80  # Sejajar dengan skor
             
             # Draw shadow/outline untuk kejelasan
             cv2.putText(frame, feedback_text, (feedback_x + 3, feedback_y + 3), 
-                       cv2.FONT_HERSHEY_DUPLEX, 2.5, (0, 0, 0), 5)
+                       cv2.FONT_HERSHEY_DUPLEX, 2, (0, 0, 0), 5)
             cv2.putText(frame, feedback_text, (feedback_x, feedback_y), 
-                       cv2.FONT_HERSHEY_DUPLEX, 2.5, feedback_color, 4)
+                       cv2.FONT_HERSHEY_DUPLEX, 2, feedback_color, 4)
         
         # Create option buttons
         if len(option_buttons) != len(current_options):
@@ -391,7 +390,7 @@ while True:
             btn.draw(frame)
         
         # Back button
-        back_btn = Button(w_frame//2 - 75, h_frame - 100, 150, 60, "Kembali", (200, 100, 100))
+        back_btn = Button(w_frame//2 - 75, h_frame - 150, 150, 60, "Kembali", (200, 100, 100))
         if finger_x and finger_y:
             back_btn.check_hover(finger_x, finger_y)
             if back_btn.is_clicked(finger_x, finger_y) and click_cooldown == 0:
