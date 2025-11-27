@@ -17,6 +17,10 @@ selected_category = None
 current_word = None
 current_options = []
 score = 0
+show_feedback = False
+feedback_text = ""
+feedback_color = (0, 255, 0)
+feedback_timer = 0
 
 BASE_PATH = os.getcwd()
 IMAGE_PATH = os.path.join(BASE_PATH, "assets", "image", "buttons")
@@ -24,24 +28,56 @@ AUDIO_PATH = os.path.join(BASE_PATH, "data_audio")
 
 word_data = {
     "Hewan": [
-        {"word": "Anjing", "audio": "anjing.wav"},
-        {"word": "Dolphin", "audio": "dolphin.wav"},
-        {"word": "Gajah", "audio": "gajah.wav"},
-        {"word": "Kucing", "audio": "kucing.wav"}
+        {"word": "Anjing", "audio": "anjing.wav", "image": "Hewan - Anjing.png"},
+        {"word": "Dolphin", "audio": "dolphin.wav", "image": "Hewan - Dolphin.png"},
+        {"word": "Gajah", "audio": "gajah.wav", "image": "Hewan - Gajah.png"},
+        {"word": "Kucing", "audio": "kucing.wav", "image": "Hewan - Kucing.png"}
     ],
     "Buah": [
-        {"word": "Apel", "audio": "apel.wav"},
-        {"word": "Pisang", "audio": "pisang.wav"},
-        {"word": "Jeruk", "audio": "jeruk.wav"},
-        {"word": "Mangga", "audio": "mangga.wav"}
+        {"word": "Apel", "audio": "apel.wav", "image": "Buah - Pisang.png"},
+        {"word": "Pisang", "audio": "pisang.wav", "image": "Buah - Pisang.png"},
+        {"word": "Jeruk", "audio": "jeruk.wav", "image": "Buah - Pisang.png"},
+        {"word": "Mangga", "audio": "mangga.wav", "image": "Buah - Pisang.png"}
     ],
     "Kendaraan": [
-        {"word": "Mobil", "audio": "mobil.wav"},
-        {"word": "Motor", "audio": "motor.wav"},
-        {"word": "Bus", "audio": "bus.wav"},
-        {"word": "Kereta", "audio": "kereta.wav"}
+        {"word": "Mobil", "audio": "mobil.wav", "image": "Kendaraan - Mobil.png"},
+        {"word": "Motor", "audio": "motor.wav", "image": "Kendaraan - Motor.png"},
+        {"word": "Bus", "audio": "bus.wav", "image": "Kendaraan - Bus.png"},
+        {"word": "Kereta", "audio": "kereta.wav", "image": "Kendaraan - Kereta.png"}
     ]
 }
+
+def load_image_with_alpha(filename):
+    filepath = os.path.join(IMAGE_PATH, filename)
+    img = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
+    if img is None:
+        print(f"Warning: Tidak dapat memuat gambar {filename}")
+    return img
+
+def overlay_png(bg, png, x, y, scale=1.0):
+    if png is None:
+        return bg
+    
+    if scale != 1.0:
+        new_w = int(png.shape[1] * scale)
+        new_h = int(png.shape[0] * scale)
+        png = cv2.resize(png, (new_w, new_h))
+    
+    h, w = png.shape[:2]
+    
+    if x < 0 or y < 0 or x + w > bg.shape[1] or y + h > bg.shape[0]:
+        return bg
+    
+    if png.shape[2] == 4:
+        roi = bg[y:y+h, x:x+w]
+        bgr = png[..., :3]
+        alpha = png[..., 3:] / 255.0
+        roi = (alpha * bgr + (1 - alpha) * roi).astype(np.uint8)
+        bg[y:y+h, x:x+w] = roi
+    else:
+        bg[y:y+h, x:x+w] = png
+    
+    return bg
 
 def play_word_audio(category, audio_file):
     try:
@@ -67,7 +103,7 @@ def generate_question(category):
     play_word_audio(category, correct["audio"])
 
 class Button:
-    def __init__(self, x, y, width, height, text, color=(100, 150, 255)):
+    def __init__(self, x, y, width, height, text, color=(100, 150, 255), image_file=None):
         self.x = x
         self.y = y
         self.width = width
@@ -76,25 +112,30 @@ class Button:
         self.color = color
         self.hover_color = (150, 200, 255)
         self.is_hovered = False
+        self.image = load_image_with_alpha(image_file) if image_file else None
         
     def draw(self, frame):
-        color = self.hover_color if self.is_hovered else self.color
-        overlay = frame.copy()
-        cv2.rectangle(overlay, (self.x, self.y), 
-                     (self.x + self.width, self.y + self.height), 
-                     color, -1)
-        cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
-        
-        cv2.rectangle(frame, (self.x, self.y), 
-                     (self.x + self.width, self.y + self.height), 
-                     (255, 255, 255), 2)
-        
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        text_size = cv2.getTextSize(self.text, font, 1, 2)[0]
-        text_x = self.x + (self.width - text_size[0]) // 2
-        text_y = self.y + (self.height + text_size[1]) // 2
-        cv2.putText(frame, self.text, (text_x, text_y), 
-                   font, 1, (255, 255, 255), 2)
+        if self.image is not None:
+            scale = min(self.width / self.image.shape[1], self.height / self.image.shape[0])
+            overlay_png(frame, self.image, self.x, self.y, scale)
+        else:
+            color = self.hover_color if self.is_hovered else self.color
+            overlay = frame.copy()
+            cv2.rectangle(overlay, (self.x, self.y), 
+                         (self.x + self.width, self.y + self.height), 
+                         color, -1)
+            cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
+            
+            cv2.rectangle(frame, (self.x, self.y), 
+                         (self.x + self.width, self.y + self.height), 
+                         (255, 255, 255), 2)
+            
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            text_size = cv2.getTextSize(self.text, font, 1, 2)[0]
+            text_x = self.x + (self.width - text_size[0]) // 2
+            text_y = self.y + (self.height + text_size[1]) // 2
+            cv2.putText(frame, self.text, (text_x, text_y), 
+                       font, 1, (255, 255, 255), 2)
     
     def is_clicked(self, x, y):
         return (self.x <= x <= self.x + self.width and 
@@ -125,12 +166,12 @@ if ret:
 else:
     h_frame, w_frame = 480, 640
 
-play_button = Button(w_frame//2 - 125, h_frame//2 - 50, 250, 100, "PLAY!")
+play_button = Button(w_frame//2 - 125, h_frame//2 - 50, 250, 100, "PLAY!", image_file="Play.png")
 
 category_buttons = [
-    Button(w_frame//2 - 150, h_frame//2 - 180, 300, 100, "Hewan"),
-    Button(w_frame//2 - 150, h_frame//2 - 50, 300, 100, "Buah"),
-    Button(w_frame//2 - 150, h_frame//2 + 80, 300, 100, "Kendaraan")
+    Button(w_frame//2 - 150, h_frame//2 - 180, 300, 100, "Hewan", image_file="Kategori - Hewan.png"),
+    Button(w_frame//2 - 150, h_frame//2 - 50, 300, 100, "Buah", image_file="Kategori - Buah.png"),
+    Button(w_frame//2 - 150, h_frame//2 + 80, 300, 100, "Kendaraan", image_file="Kategori - Kendaraan.png")
 ]
 
 option_buttons = []
@@ -138,7 +179,7 @@ option_buttons = []
 click_cooldown = 0
 CLICK_COOLDOWN_MAX = 20
 
-print("Version 5: Option buttons and answer checking added")
+print("Version 6: Feedback system and PNG image support added")
 print("Tekan 'q' untuk keluar.")
 
 while True:
@@ -153,6 +194,11 @@ while True:
     
     if click_cooldown > 0:
         click_cooldown -= 1
+    
+    if feedback_timer > 0:
+        feedback_timer -= 1
+    else:
+        show_feedback = False
     
     finger_x, finger_y = None, None
     
@@ -199,6 +245,16 @@ while True:
         cv2.putText(frame, score_text, (w_frame - 200, 80), 
                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
         
+        # Draw feedback
+        if show_feedback and feedback_timer > 0:
+            feedback_x = 50
+            feedback_y = 80
+            
+            cv2.putText(frame, feedback_text, (feedback_x + 3, feedback_y + 3), 
+                       cv2.FONT_HERSHEY_DUPLEX, 2, (0, 0, 0), 5)
+            cv2.putText(frame, feedback_text, (feedback_x, feedback_y), 
+                       cv2.FONT_HERSHEY_DUPLEX, 2, feedback_color, 4)
+        
         # Create option buttons
         if len(option_buttons) != len(current_options):
             option_buttons = []
@@ -206,10 +262,10 @@ while True:
                 btn_x = 50 if i < 2 else w_frame - 250
                 btn_y = 150 if i % 2 == 0 else 350
                 option_buttons.append(
-                    Button(btn_x, btn_y, 200, 150, option["word"])
+                    Button(btn_x, btn_y, 200, 150, option["word"], image_file=option["image"])
                 )
         
-        # Draw and check option buttons
+        # Draw option buttons
         for i, btn in enumerate(option_buttons):
             if finger_x and finger_y:
                 btn.check_hover(finger_x, finger_y)
@@ -217,15 +273,24 @@ while True:
                     if current_options[i] == current_word:
                         print("✓ Benar!")
                         score += 1
+                        show_feedback = True
+                        feedback_text = "BENAR! +1"
+                        feedback_color = (0, 255, 0)
+                        feedback_timer = 30
+                        click_cooldown = CLICK_COOLDOWN_MAX
                         generate_question(selected_category)
                     else:
                         print("✗ Salah!")
+                        show_feedback = True
+                        feedback_text = "SALAH!"
+                        feedback_color = (0, 0, 255)
+                        feedback_timer = 30
                         play_word_audio(selected_category, current_word["audio"])
-                    click_cooldown = CLICK_COOLDOWN_MAX
+                        click_cooldown = CLICK_COOLDOWN_MAX
             
             btn.draw(frame)
     
-    cv2.imshow("Guess The Word Game - v5", frame)
+    cv2.imshow("Guess The Word Game - v6", frame)
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
