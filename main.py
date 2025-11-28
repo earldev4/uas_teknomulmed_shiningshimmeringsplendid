@@ -190,3 +190,123 @@ cat_buah_btn      = load_button_image(CAT_BUAH_PATH, CAT_BTN_SIZE)
 cat_hewan_btn     = load_button_image(CAT_HEWAN_PATH, CAT_BTN_SIZE)
 cat_kendaraan_btn = load_button_image(CAT_KENDARAAN_PATH, CAT_BTN_SIZE)
 
+# =========================
+# 5. STATE GAME
+# =========================
+
+state = STATE_HOME
+selected_category = None  # "hewan" / "buah" / "kendaraan"
+
+print("Tekan 'q' untuk keluar.")
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    frame = cv2.flip(frame, 1)
+    h_frame, w_frame, _ = frame.shape
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    results = hands.process(frame_rgb)
+
+    # Kurangi cooldown
+    if hit_cooldown > 0:
+        hit_cooldown -= 1
+
+    fingertip = None
+
+    # =========================
+    # DETEKSI TANGAN & JARI
+    # =========================
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            mp_drawing.draw_landmarks(
+                frame,
+                hand_landmarks,
+                mp_hands.HAND_CONNECTIONS,
+                mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
+                mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2),
+            )
+
+            cx = int(hand_landmarks.landmark[8].x * w_frame)
+            cy = int(hand_landmarks.landmark[8].y * h_frame)
+            fingertip = (cx, cy)
+
+            cv2.circle(frame, (cx, cy), 10, (255, 255, 0), cv2.FILLED)
+            break  # pakai 1 tangan saja
+
+    # =========================
+    # TAMPILKAN UI BERDASARKAN STATE
+    # =========================
+
+    header_x = (w_frame - header_btn.shape[1]) // 2
+    header_y = 20
+
+    # ---------- STATE HOME ----------
+    if state == STATE_HOME:
+        # Header hanya di HOME
+        frame = overlay_png(frame, header_btn, header_x, header_y)
+
+        play_x = (w_frame - play_btn.shape[1]) // 2
+        play_y = int(h_frame * 0.7)
+        frame = overlay_png(frame, play_btn, play_x, play_y)
+
+        if fingertip and hit_cooldown == 0:
+            if point_on_png_button(fingertip[0], fingertip[1], play_x, play_y, play_btn):
+                play_click_sfx()
+                print("[INFO] Play ditekan → masuk menu kategori")
+                state = STATE_CATEGORY
+                hit_cooldown = HIT_COOLDOWN_MAX
+
+    # ---------- STATE CATEGORY ----------
+    elif state == STATE_CATEGORY:
+        buttons = [
+            ("hewan", cat_hewan_btn),
+            ("buah", cat_buah_btn),
+            ("kendaraan", cat_kendaraan_btn),
+        ]
+
+        total_width = sum(btn.shape[1] for _, btn in buttons) + 60 * (len(buttons) - 1)
+        start_x = (w_frame - total_width) // 2
+        y = int(h_frame * 0.72)
+
+        x = start_x
+        for key, btn_img in buttons:
+            frame = overlay_png(frame, btn_img, x, y)
+
+            if fingertip and hit_cooldown == 0:
+                if point_on_png_button(fingertip[0], fingertip[1], x, y, btn_img):
+                    selected_category = key
+                    play_click_sfx()
+                    print(f"[INFO] Kategori dipilih: {selected_category}")
+                    hit_cooldown = HIT_COOLDOWN_MAX
+
+            x += btn_img.shape[1] + 60
+
+        if selected_category:
+            cv2.putText(
+                frame,
+                f"Terpilih: {selected_category}",
+                (40, h_frame - 40),
+                cv2.FONT_HERSHEY_DUPLEX,
+                1,
+                (255, 255, 255),
+                2
+            )
+
+    # =========================
+    # UPDATE BGM & TAMPILKAN FRAME
+    # =========================
+
+    update_bgm_for_state(state)
+
+    cv2.imshow(WINDOW_NAME, frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+
+if AUDIO_OK:
+    pygame.mixer.quit()
