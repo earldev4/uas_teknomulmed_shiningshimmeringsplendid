@@ -15,22 +15,21 @@ PLAY_BUTTON_PATH   = os.path.join("assets", "image", "buttons", "Play.png")
 CAT_BUAH_PATH      = os.path.join("assets", "image", "buttons", "Kategori - Buah.png")
 CAT_HEWAN_PATH     = os.path.join("assets", "image", "buttons", "Kategori - Hewan.png")
 CAT_KENDARAAN_PATH = os.path.join("assets", "image", "buttons", "Kategori - Kendaraan.png")
-PLAY_AGAIN_PATH   = os.path.join("assets", "image", "buttons", "Mainkan Lagi.png")
+PLAY_AGAIN_PATH    = os.path.join("assets", "image", "buttons", "Mainkan Lagi.png")
 
-# Folder semua tombol jawaban, contoh file:
-# "Hewan - Monkey.png", "Buah - Apel.png", "Kendaraan - Bus.png", dst.
+# Folder semua tombol jawaban
 ANSWER_BUTTONS_DIR = os.path.join("assets", "image", "buttons")
 
 # Button ulangi audio
 REPEAT_AUDIO_PATH = os.path.join("assets", "image", "buttons", "Ulang Suara.png")
 
-# Audio – nanti kamu ganti ke file aslimu
+# Audio
 BGM_MENU_PATH     = os.path.join("assets", "audio", "BG NCS.mp3")
 SFX_CLICK_PATH    = os.path.join("assets", "audio", "Button Pressed.mp3")
 SFX_CORRECT_PATH  = os.path.join("assets", "audio", "Correct.mp3")
 SFX_WRONG_PATH    = os.path.join("assets", "audio", "Wrong.mp3")
 
-# Root audio soal (chipmunk, hasil audio_processing.py)
+# Root audio soal
 PITCH_AUDIO_ROOT = os.path.join("pitch_audio")
 
 WINDOW_NAME = "Guess The Word Filter"
@@ -40,13 +39,15 @@ STATE_CATEGORY = "category"
 STATE_GAME     = "game"
 STATE_RESULT   = "result"
 
-# Cooldown sentuh tombol biar gak dobel-dobel
-HIT_COOLDOWN_MAX = 8
-hit_cooldown = 30   # sedikit delay di awal supaya tidak auto-klik PLAY
+# Cooldown berbasis waktu (ms)
+BUTTON_COOLDOWN_MS   = 2000   # 2 detik: setelah klik tombol, tombol lain tidak merespons
+QUESTION_DELAY_MS    = 2500   # 2.5 detik: delay sebelum pindah ke soal berikutnya
+last_hit_time        = 0      # timestamp terakhir kali klik tombol
+question_transition_time = None
+question_answered        = False
 
 # =========================
 # 1a. DATA SOAL PER KATEGORI
-# (sinkron dengan audio_code.py)
 # =========================
 
 CATEGORY_DATA = {
@@ -123,37 +124,45 @@ def play_wrong():
 
 
 def update_bgm_for_state(state):
-    """
-    HOME + CATEGORY  -> BGM menyala (loop)
-    STATE lain (GAME, RESULT) -> BGM mati
-    """
     if not (AUDIO_OK and bgm_available):
         return
 
     if state in (STATE_HOME, STATE_CATEGORY):
         if not pygame.mixer.music.get_busy():
-            pygame.mixer.music.play(-1)  # loop
+            pygame.mixer.music.play(-1)
     else:
         if pygame.mixer.music.get_busy():
             pygame.mixer.music.stop()
 
 # =========================
-# 2. FUNGSI BANTUAN GAMBAR
+# 2. UTIL WAKTU & INPUT
+# =========================
+
+def now_ms():
+    return int(time.time() * 1000)
+
+
+def can_interact():
+    """True kalau sudah lewat cooldown tombol."""
+    return now_ms() - last_hit_time >= BUTTON_COOLDOWN_MS
+
+
+def set_cooldown():
+    global last_hit_time
+    last_hit_time = now_ms()
+
+# =========================
+# 2a. FUNGSI BANTUAN GAMBAR
 # =========================
 
 def load_button_image(path, size):
-    """
-    Load gambar tombol (BGRA). Kalau gagal, buat dummy tombol.
-    size: (width, height)
-    """
     w, h = size
     img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
 
     if img is None:
-        # Buat dummy BGRA
         dummy = np.zeros((h, w, 4), dtype=np.uint8)
-        dummy[..., :3] = (0, 0, 255)      # merah
-        dummy[..., 3] = 255               # alpha penuh
+        dummy[..., :3] = (0, 0, 255)
+        dummy[..., 3] = 255
         cv2.putText(
             dummy,
             "BTN",
@@ -167,7 +176,6 @@ def load_button_image(path, size):
         return dummy
 
     img = cv2.resize(img, (w, h))
-    # Kalau tidak ada alpha, tambahkan
     if img.shape[2] == 3:
         bgr = img
         alpha = np.full((h, w, 1), 255, dtype=np.uint8)
@@ -176,20 +184,15 @@ def load_button_image(path, size):
 
 
 def overlay_png(bg, png, x, y):
-    """
-    Gambar PNG (BGRA) di atas background (BGR) dengan alpha blending.
-    (x, y) = posisi kiri-atas.
-    """
     h, w, _ = png.shape
 
-    # Cek batas frame
     if x < 0 or y < 0 or x + w > bg.shape[1] or y + h > bg.shape[0]:
         return bg
 
     roi = bg[y:y + h, x:x + w]
 
     bgr = png[..., :3]
-    alpha = png[..., 3:] / 255.0  # (h,w,1)
+    alpha = png[..., 3:] / 255.0
 
     roi = (alpha * bgr + (1 - alpha) * roi).astype(np.uint8)
     bg[y:y + h, x:x + w] = roi
@@ -197,9 +200,6 @@ def overlay_png(bg, png, x, y):
 
 
 def point_on_png_button(cx, cy, x, y, png):
-    """
-    Cek apakah titik (cx, cy) menyentuh tombol PNG dan bukan area transparan.
-    """
     h, w, _ = png.shape
 
     if not (x <= cx < x + w and y <= cy < y + h):
@@ -210,22 +210,22 @@ def point_on_png_button(cx, cy, x, y, png):
     alpha = png[local_y, local_x, 3]
     return alpha > 10
 
+
 def put_text_with_outline(
     img,
     text,
-    org,                 # (x, y)
+    org,
     font,
     font_scale,
-    color,               # warna teks utama, misal (255,255,255)
-    thickness,           # ketebalan teks utama
-    outline_color=(0, 0, 0),    # warna outline, default hitam
-    outline_thickness=None      # kalau None => thickness+2
+    color,
+    thickness,
+    outline_color=(0, 0, 0),
+    outline_thickness=None
 ):
     x, y = org
     if outline_thickness is None:
         outline_thickness = thickness + 2
 
-    # gambar outline di empat arah (atas-bawah-kiri-kanan/diagonal)
     for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
         cv2.putText(
             img,
@@ -237,8 +237,6 @@ def put_text_with_outline(
             outline_thickness,
             cv2.LINE_AA,
         )
-
-    # gambar teks utama di tengah outline
     cv2.putText(
         img,
         text,
@@ -249,19 +247,13 @@ def put_text_with_outline(
         thickness,
         cv2.LINE_AA,
     )
-
     return img
 
 # =========================
-# 2a. LOAD SEMUA ASSET JAWABAN DARI FOLDER
+# 2b. LOAD SEMUA ASSET JAWABAN
 # =========================
 
 def load_all_answer_assets():
-    """
-    Baca semua file .png di ANSWER_BUTTONS_DIR yang namanya:
-    'Hewan - Monkey.png', 'Buah - Apel.png', 'Kendaraan - Bus.png', dst.
-    Hasil: dict per kategori -> list {word, img}
-    """
     all_assets = {
         "hewan": [],
         "buah": [],
@@ -276,13 +268,13 @@ def load_all_answer_assets():
         if not fname.lower().endswith(".png"):
             continue
 
-        name_no_ext = os.path.splitext(fname)[0]   # "Hewan - Monkey"
+        name_no_ext = os.path.splitext(fname)[0]
         parts = name_no_ext.split("-")
         if len(parts) < 2:
             continue
 
-        cat_label = parts[0].strip().lower()   # "hewan", "buah", "kendaraan"
-        word = parts[1].strip().lower()        # "monkey", "apel", "bus"
+        cat_label = parts[0].strip().lower()
+        word = parts[1].strip().lower()
 
         if cat_label in all_assets:
             path = os.path.join(ANSWER_BUTTONS_DIR, fname)
@@ -351,32 +343,28 @@ play_again_btn = load_button_image(PLAY_AGAIN_PATH, PLAY_AGAIN_BTN_SIZE)
 # =========================
 
 state = STATE_HOME
-selected_category = None  # "hewan" / "buah" / "kendaraan"
+selected_category = None
 
 score = 0
-questions = []           # list dict: {word, lang, audio_path}
+questions = []
 current_q_index = 0
 current_q = None
 correct_answer = None
 
-question_sound = None        # pygame.mixer.Sound untuk soal saat ini
-question_start_time = 0      # ms
+question_sound = None
+question_start_time = 0
 audio_initial_played = False
-repeat_used = False          # tombol ulangi audio per soal
+repeat_used = False
 
-answer_buttons = []          # list tombol jawaban {word, img}
+answer_buttons = []
 
 print("Tekan 'q' untuk keluar.")
 
-
-def now_ms():
-    """Waktu dalam millisecond (tanpa tergantung pygame)."""
-    return int(time.time() * 1000)
-
-
+# =========================
+# 6. LOGIKA SOAL
+# =========================
 
 def build_questions_for_category(cat_key):
-    """Bangun list 10 soal (5 ID, 5 EN) untuk kategori tertentu."""
     data = CATEGORY_DATA[cat_key]
     id_words = data["id_words"]
     en_words = data["en_words"]
@@ -403,18 +391,17 @@ def build_questions_for_category(cat_key):
 
 
 def setup_question(cat_key, index):
-    """Siapkan soal ke-index, load audio & opsi jawaban dari asset PNG."""
     global current_q, correct_answer, answer_buttons
     global question_sound, question_start_time, audio_initial_played, repeat_used
+    global question_answered, question_transition_time
 
     assets_for_cat = ALL_ANSWER_ASSETS.get(cat_key, [])
     if not assets_for_cat:
         print("[ASSET] Tidak ada asset jawaban untuk kategori:", cat_key)
 
     current_q = questions[index]
-    correct_answer = current_q["word"]  # lowercase
+    correct_answer = current_q["word"]
 
-    # Cari tombol PNG yang cocok sebagai jawaban benar
     correct_btn = None
     wrong_btns = []
     for item in assets_for_cat:
@@ -425,16 +412,13 @@ def setup_question(cat_key, index):
 
     if correct_btn is None:
         print(f"[WARN] Tidak ketemu asset untuk kata '{correct_answer}' di kategori '{cat_key}'")
-        # fallback: ambil max 4 acak
         answer_buttons = random.sample(assets_for_cat, min(4, len(assets_for_cat)))
     else:
-        # ambil 3 jawaban salah random
         if len(wrong_btns) >= 3:
             wrong_btns = random.sample(wrong_btns, 3)
         answer_buttons = wrong_btns + [correct_btn]
         random.shuffle(answer_buttons)
 
-    # Load audio soal
     question_sound = None
     if AUDIO_OK and os.path.exists(current_q["audio_path"]):
         try:
@@ -448,8 +432,14 @@ def setup_question(cat_key, index):
     audio_initial_played = False
     repeat_used = False
 
+    question_answered = False
+    question_transition_time = None
+
     print(f"[SOAL] Q{index+1}: {correct_answer} ({current_q['lang']})")
 
+# =========================
+# 7. MAIN LOOP
+# =========================
 
 while True:
     ret, frame = cap.read()
@@ -462,15 +452,8 @@ while True:
 
     results = hands.process(frame_rgb)
 
-    # Kurangi cooldown
-    if hit_cooldown > 0:
-        hit_cooldown -= 1
-
     fingertip = None
 
-    # =========================
-    # DETEKSI TANGAN & JARI
-    # =========================
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(
@@ -486,11 +469,7 @@ while True:
             fingertip = (cx, cy)
 
             cv2.circle(frame, (cx, cy), 10, (255, 255, 0), cv2.FILLED)
-            break  # pakai 1 tangan saja
-
-    # =========================
-    # TAMPILKAN UI BERDASARKAN STATE
-    # =========================
+            break
 
     header_x = (w_frame - header_btn.shape[1]) // 2
     header_y = 20
@@ -503,12 +482,12 @@ while True:
         play_y = int(h_frame * 0.7)
         frame = overlay_png(frame, play_btn, play_x, play_y)
 
-        if fingertip and hit_cooldown == 0:
+        if fingertip and can_interact():
             if point_on_png_button(fingertip[0], fingertip[1], play_x, play_y, play_btn):
                 play_click_sfx()
+                set_cooldown()
                 print("[INFO] Play ditekan → masuk menu kategori")
                 state = STATE_CATEGORY
-                hit_cooldown = HIT_COOLDOWN_MAX
 
     # ---------- STATE CATEGORY ----------
     elif state == STATE_CATEGORY:
@@ -526,10 +505,11 @@ while True:
         for key, btn_img in buttons:
             frame = overlay_png(frame, btn_img, x, y)
 
-            if fingertip and hit_cooldown == 0:
+            if fingertip and can_interact():
                 if point_on_png_button(fingertip[0], fingertip[1], x, y, btn_img):
                     selected_category = key
                     play_click_sfx()
+                    set_cooldown()
                     print(f"[INFO] Kategori dipilih: {selected_category}")
 
                     score = 0
@@ -538,11 +518,9 @@ while True:
                     setup_question(selected_category, current_q_index)
 
                     state = STATE_GAME
-                    hit_cooldown = HIT_COOLDOWN_MAX
 
             x += btn_img.shape[1] + 60
 
-        #
         if selected_category:
             put_text_with_outline(
                 frame,
@@ -550,15 +528,13 @@ while True:
                 (40, h_frame - 40),
                 cv2.FONT_HERSHEY_DUPLEX,
                 1.0,
-                (255, 255, 255),   # teks putih
-                2,                 # ketebalan teks utama
-                (0, 0, 0)          # outline hitam
+                (255, 255, 255),
+                2,
+                (0, 0, 0)
             )
-
 
     # ---------- STATE GAME ----------
     elif state == STATE_GAME:
-        # Skor di pojok kiri atas
         put_text_with_outline(
             frame,
             f"Skor: {score}",
@@ -570,9 +546,7 @@ while True:
             (0, 0, 0)
         )
 
-        # Hitung total soal
         total_q = len(questions)
-
         put_text_with_outline(
             frame,
             f"Soal: {current_q_index+1}/{total_q}",
@@ -584,35 +558,32 @@ while True:
             (0, 0, 0)
         )
 
-        # Delay 2 detik sebelum audio soal pertama kali diputar
         t_now = now_ms()
         if not audio_initial_played and question_sound is not None:
             if t_now - question_start_time >= 2000:
                 question_sound.play()
                 audio_initial_played = True
 
-        #
-        # Tampilkan 4 opsi jawaban sebagai 4 tombol PNG dalam 1 baris horizontal
+        # Opsi jawaban – hanya aktif kalau soal belum dijawab
         if answer_buttons:
-            gap_x = 30  # jarak antar tombol
-            # total lebar semua tombol + jarak antar tombol
+            gap_x = 30
             total_width = sum(btn["img"].shape[1] for btn in answer_buttons) + \
                           gap_x * (len(answer_buttons) - 1)
 
-            start_x = int((w_frame - total_width) / 2)   # rata tengah
-            y_btn   = int(h_frame * 0.65)                # tinggi baris tombol
+            start_x = int((w_frame - total_width) / 2)
+            y_btn   = int(h_frame * 0.65)
 
             x = start_x
-            for i, btn in enumerate(answer_buttons):
+            for btn in answer_buttons:
                 img  = btn["img"]
-                word = btn["word"]   # lowercase
+                word = btn["word"]
 
                 frame = overlay_png(frame, img, x, y_btn)
 
-                # cek klik jawaban
-                if fingertip and hit_cooldown == 0:
+                if (not question_answered) and fingertip and can_interact():
                     if point_on_png_button(fingertip[0], fingertip[1], x, y_btn, img):
                         play_click_sfx()
+                        set_cooldown()
                         print(f"[JAWAB] {word}")
 
                         if word == correct_answer:
@@ -623,35 +594,39 @@ while True:
                             play_wrong()
                             print("[HASIL] Salah!")
 
-                        hit_cooldown = HIT_COOLDOWN_MAX
-                        current_q_index += 1
+                        # tandai soal sudah dijawab dan set transition delay
+                        question_answered = True
+                        question_transition_time = now_ms() + QUESTION_DELAY_MS
 
-                        if current_q_index < len(questions):
-                            setup_question(selected_category, current_q_index)
-                        else:
-                            print("[INFO] Semua soal selesai.")
-                            state = STATE_RESULT
-                        break  # stop loop opsi setelah jawab
-
-                # geser X ke kanan untuk tombol berikutnya
                 x += img.shape[1] + gap_x
 
-        # =========================
-        # Tombol "Ulangi Audio"
-        # =========================
-        if not repeat_used and question_sound is not None:
-            rx = w_frame - repeat_audio_btn.shape[1] - 30  # pojok kanan
-            ry = 30                                        # atas
+        # Tombol "Ulangi Audio" hanya sebelum soal dijawab
+        if (not question_answered) and (not repeat_used) and question_sound is not None:
+            rx = w_frame - repeat_audio_btn.shape[1] - 30
+            ry = 30
 
             frame = overlay_png(frame, repeat_audio_btn, rx, ry)
 
-            if fingertip and hit_cooldown == 0:
+            if fingertip and can_interact():
                 if point_on_png_button(fingertip[0], fingertip[1], rx, ry, repeat_audio_btn):
                     if audio_initial_played:
+                        play_click_sfx()
                         question_sound.play()
                         repeat_used = True
-                        hit_cooldown = HIT_COOLDOWN_MAX
+                        set_cooldown()
                         print("[INFO] Audio diulang sekali.")
+
+        # Setelah delay QUESTION_DELAY_MS, baru pindah soal / result
+        if question_answered and question_transition_time is not None:
+            if now_ms() >= question_transition_time:
+                question_transition_time = None
+                current_q_index += 1
+
+                if current_q_index < len(questions):
+                    setup_question(selected_category, current_q_index)
+                else:
+                    print("[INFO] Semua soal selesai.")
+                    state = STATE_RESULT
 
     # ---------- STATE RESULT ----------
     elif state == STATE_RESULT:
@@ -688,15 +663,16 @@ while True:
             (0, 0, 0)
         )
 
-        # ============ TOMBOL "MAINkan LAGI" ============
+        # Tombol "Mainkan Lagi"
         btn_x = (w_frame - play_again_btn.shape[1]) // 2
-        btn_y = int(h_frame * 0.72)   # di bawah teks hasil
+        btn_y = int(h_frame * 0.72)
 
         frame = overlay_png(frame, play_again_btn, btn_x, btn_y)
 
-        if fingertip and hit_cooldown == 0:
+        if fingertip and can_interact():
             if point_on_png_button(fingertip[0], fingertip[1], btn_x, btn_y, play_again_btn):
                 play_click_sfx()
+                set_cooldown()
                 print("[INFO] Mainkan lagi ditekan → kembali ke menu kategori")
 
                 # reset state game
@@ -711,7 +687,6 @@ while True:
                 repeat_used = False
 
                 state = STATE_CATEGORY
-                hit_cooldown = HIT_COOLDOWN_MAX
 
     # =========================
     # UPDATE BGM & TAMPILKAN FRAME
