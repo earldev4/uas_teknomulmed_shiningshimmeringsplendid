@@ -15,6 +15,7 @@ PLAY_BUTTON_PATH   = os.path.join("assets", "image", "buttons", "Play.png")
 CAT_BUAH_PATH      = os.path.join("assets", "image", "buttons", "Kategori - Buah.png")
 CAT_HEWAN_PATH     = os.path.join("assets", "image", "buttons", "Kategori - Hewan.png")
 CAT_KENDARAAN_PATH = os.path.join("assets", "image", "buttons", "Kategori - Kendaraan.png")
+PLAY_AGAIN_PATH   = os.path.join("assets", "image", "buttons", "Mainkan Lagi.png")
 
 # Folder semua tombol jawaban, contoh file:
 # "Hewan - Monkey.png", "Buah - Apel.png", "Kendaraan - Bus.png", dst.
@@ -209,6 +210,48 @@ def point_on_png_button(cx, cy, x, y, png):
     alpha = png[local_y, local_x, 3]
     return alpha > 10
 
+def put_text_with_outline(
+    img,
+    text,
+    org,                 # (x, y)
+    font,
+    font_scale,
+    color,               # warna teks utama, misal (255,255,255)
+    thickness,           # ketebalan teks utama
+    outline_color=(0, 0, 0),    # warna outline, default hitam
+    outline_thickness=None      # kalau None => thickness+2
+):
+    x, y = org
+    if outline_thickness is None:
+        outline_thickness = thickness + 2
+
+    # gambar outline di empat arah (atas-bawah-kiri-kanan/diagonal)
+    for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
+        cv2.putText(
+            img,
+            text,
+            (x + dx, y + dy),
+            font,
+            font_scale,
+            outline_color,
+            outline_thickness,
+            cv2.LINE_AA,
+        )
+
+    # gambar teks utama di tengah outline
+    cv2.putText(
+        img,
+        text,
+        (x, y),
+        font,
+        font_scale,
+        color,
+        thickness,
+        cv2.LINE_AA,
+    )
+
+    return img
+
 # =========================
 # 2a. LOAD SEMUA ASSET JAWABAN DARI FOLDER
 # =========================
@@ -299,6 +342,9 @@ cat_kendaraan_btn = load_button_image(CAT_KENDARAAN_PATH, CAT_BTN_SIZE)
 
 REPEAT_BTN_SIZE = (260, 80)
 repeat_audio_btn = load_button_image(REPEAT_AUDIO_PATH, REPEAT_BTN_SIZE)
+
+PLAY_AGAIN_BTN_SIZE = (320, 110)
+play_again_btn = load_button_image(PLAY_AGAIN_PATH, PLAY_AGAIN_BTN_SIZE)
 
 # =========================
 # 5. STATE & VARIABEL GAME
@@ -496,40 +542,46 @@ while True:
 
             x += btn_img.shape[1] + 60
 
+        #
         if selected_category:
-            cv2.putText(
+            put_text_with_outline(
                 frame,
                 f"Terpilih: {selected_category}",
                 (40, h_frame - 40),
                 cv2.FONT_HERSHEY_DUPLEX,
-                1,
-                (255, 255, 255),
-                2
+                1.0,
+                (255, 255, 255),   # teks putih
+                2,                 # ketebalan teks utama
+                (0, 0, 0)          # outline hitam
             )
+
 
     # ---------- STATE GAME ----------
     elif state == STATE_GAME:
         # Skor di pojok kiri atas
-        cv2.putText(
+        put_text_with_outline(
             frame,
             f"Skor: {score}",
             (30, 60),
             cv2.FONT_HERSHEY_DUPLEX,
             1.0,
             (255, 255, 255),
-            2
+            2,
+            (0, 0, 0)
         )
 
-        # Info soal
+        # Hitung total soal
         total_q = len(questions)
-        cv2.putText(
+
+        put_text_with_outline(
             frame,
             f"Soal: {current_q_index+1}/{total_q}",
             (30, 110),
             cv2.FONT_HERSHEY_DUPLEX,
             0.9,
             (255, 255, 255),
-            2
+            2,
+            (0, 0, 0)
         )
 
         # Delay 2 detik sebelum audio soal pertama kali diputar
@@ -603,33 +655,63 @@ while True:
 
     # ---------- STATE RESULT ----------
     elif state == STATE_RESULT:
-        cv2.putText(
+        put_text_with_outline(
             frame,
             "Kuis Selesai!",
             (int(w_frame * 0.3), int(h_frame * 0.4)),
             cv2.FONT_HERSHEY_DUPLEX,
             1.4,
             (255, 255, 255),
-            3
+            3,
+            (0, 0, 0)
         )
-        cv2.putText(
+
+        put_text_with_outline(
             frame,
             f"Skor Akhir: {score} / {len(questions)}",
             (int(w_frame * 0.23), int(h_frame * 0.5)),
             cv2.FONT_HERSHEY_DUPLEX,
             1.2,
             (255, 255, 255),
-            2
+            2,
+            (0, 0, 0)
         )
-        cv2.putText(
+
+        put_text_with_outline(
             frame,
             "Tekan 'q' untuk keluar",
             (int(w_frame * 0.3), int(h_frame * 0.6)),
             cv2.FONT_HERSHEY_DUPLEX,
             0.9,
             (255, 255, 255),
-            2
+            2,
+            (0, 0, 0)
         )
+
+        # ============ TOMBOL "MAINkan LAGI" ============
+        btn_x = (w_frame - play_again_btn.shape[1]) // 2
+        btn_y = int(h_frame * 0.72)   # di bawah teks hasil
+
+        frame = overlay_png(frame, play_again_btn, btn_x, btn_y)
+
+        if fingertip and hit_cooldown == 0:
+            if point_on_png_button(fingertip[0], fingertip[1], btn_x, btn_y, play_again_btn):
+                play_click_sfx()
+                print("[INFO] Mainkan lagi ditekan → kembali ke menu kategori")
+
+                # reset state game
+                score = 0
+                selected_category = None
+                questions = []
+                current_q_index = 0
+                current_q = None
+                correct_answer = None
+                question_sound = None
+                audio_initial_played = False
+                repeat_used = False
+
+                state = STATE_CATEGORY
+                hit_cooldown = HIT_COOLDOWN_MAX
 
     # =========================
     # UPDATE BGM & TAMPILKAN FRAME
