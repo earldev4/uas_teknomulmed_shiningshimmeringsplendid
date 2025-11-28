@@ -177,3 +177,16 @@ if not cap.isOpened():
 
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+# =========================
+# 4. LOAD TOMBOL
+# =========================
+
+header_btn = load_button_image(HEADER_BUTTON_PATH, size=(400, 100))
+play_btn   = load_button_image(PLAY_BUTTON_PATH, size=(260, 100))
+
+CAT_BTN_SIZE = (380, 130)
+cat_buah_btn      = load_button_image(CAT_BUAH_PATH, CAT_BTN_SIZE)
+cat_hewan_btn     = load_button_image(CAT_HEWAN_PATH, CAT_BTN_SIZE)
+cat_kendaraan_btn = load_button_image(CAT_KENDARAAN_PATH, CAT_BTN_SIZE)
+
