@@ -148,3 +148,32 @@ def point_on_png_button(cx, cy, x, y, png):
     local_y = cy - y
     alpha = png[local_y, local_x, 3]
     return alpha > 10
+
+# =========================
+# 3. SETUP MEDIAPIPE & KAMERA
+# =========================
+
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+
+hands = mp_hands.Hands(
+    static_image_mode=False,
+    max_num_hands=1,
+    min_detection_confidence=0.6,
+    min_tracking_confidence=0.6,
+)
+
+cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
+cv2.setWindowProperty(
+    WINDOW_NAME,
+    cv2.WND_PROP_FULLSCREEN,
+    cv2.WINDOW_FULLSCREEN
+)
+
+cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    print("Error: Kamera tidak dapat diakses.")
+    exit()
+
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
