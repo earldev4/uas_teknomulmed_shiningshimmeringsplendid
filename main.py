@@ -243,7 +243,7 @@ def load_all_answer_assets():
 
         if cat_label in all_assets:
             path = os.path.join(ANSWER_BUTTONS_DIR, fname)
-            img = load_button_image(path, (340, 120))
+            img = load_button_image(path, (290, 95))
             all_assets[cat_label].append({
                 "word": word,
                 "img": img
@@ -324,11 +324,9 @@ print("Tekan 'q' untuk keluar.")
 
 
 def now_ms():
-    """Waktu dalam millisecond."""
-    if AUDIO_OK:
-        return pygame.time.get_ticks()
-    else:
-        return int(time.time() * 1000)
+    """Waktu dalam millisecond (tanpa tergantung pygame)."""
+    return int(time.time() * 1000)
+
 
 
 def build_questions_for_category(cat_key):
@@ -345,13 +343,13 @@ def build_questions_for_category(cat_key):
         q_list.append({
             "word": w.lower(),
             "lang": "id",
-            "audio_path": os.path.join(data["dir"], f"{w}_pitch.wav")
+            "audio_path": os.path.join(data["dir"], f"{w}.wav")
         })
     for w in en_pick:
         q_list.append({
             "word": w.lower(),
             "lang": "en",
-            "audio_path": os.path.join(data["dir"], f"{w}_pitch.wav")
+            "audio_path": os.path.join(data["dir"], f"{w}.wav")
         })
 
     random.shuffle(q_list)
@@ -559,21 +557,6 @@ while True:
 
                 frame = overlay_png(frame, img, x, y_btn)
 
-                # (opsional) tulis kata di atas tombol – kalau dobel teks, bisa dihapus blok ini
-                text_show = word.capitalize()
-                text_size, _ = cv2.getTextSize(text_show, cv2.FONT_HERSHEY_DUPLEX, 0.8, 2)
-                tx = x + (img.shape[1] - text_size[0]) // 2
-                ty = y_btn + (img.shape[0] + text_size[1]) // 2 - 5
-                cv2.putText(
-                    frame,
-                    text_show,
-                    (tx, ty),
-                    cv2.FONT_HERSHEY_DUPLEX,
-                    0.8,
-                    (255, 255, 255),
-                    2
-                )
-
                 # cek klik jawaban
                 if fingertip and hit_cooldown == 0:
                     if point_on_png_button(fingertip[0], fingertip[1], x, y_btn, img):
@@ -601,13 +584,12 @@ while True:
                 # geser X ke kanan untuk tombol berikutnya
                 x += img.shape[1] + gap_x
 
-        #
-        # Tombol "Ulangi Audio" (1x per soal) pakai asset PNG – di bawah barisan tombol
-        if not repeat_used and question_sound is not None and answer_buttons:
-            # posisikan di tengah, sedikit di bawah baris tombol
-            btn_height = answer_buttons[0]["img"].shape[0]
-            rx = (w_frame - repeat_audio_btn.shape[1]) // 2
-            ry = int(h_frame * 0.65) + btn_height + 40  # 40 = jarak vertikal
+        # =========================
+        # Tombol "Ulangi Audio"
+        # =========================
+        if not repeat_used and question_sound is not None:
+            rx = w_frame - repeat_audio_btn.shape[1] - 30  # pojok kanan
+            ry = 30                                        # atas
 
             frame = overlay_png(frame, repeat_audio_btn, rx, ry)
 
@@ -618,7 +600,6 @@ while True:
                         repeat_used = True
                         hit_cooldown = HIT_COOLDOWN_MAX
                         print("[INFO] Audio diulang sekali.")
-
 
     # ---------- STATE RESULT ----------
     elif state == STATE_RESULT:
