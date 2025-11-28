@@ -75,3 +75,76 @@ def update_bgm_for_state(state):
     else:
         if pygame.mixer.music.get_busy():
             pygame.mixer.music.stop()
+
+# =========================
+# 2. FUNGSI BANTUAN GAMBAR
+# =========================
+
+def load_button_image(path, size):
+    """
+    Load gambar tombol (BGRA). Kalau gagal, buat dummy tombol.
+    size: (width, height)
+    """
+    w, h = size
+    img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+
+    if img is None:
+        # Buat dummy BGRA
+        dummy = np.zeros((h, w, 4), dtype=np.uint8)
+        dummy[..., :3] = (0, 0, 255)      # merah
+        dummy[..., 3] = 255               # alpha penuh
+        cv2.putText(
+            dummy,
+            "BTN",
+            (10, int(h * 0.65)),
+            cv2.FONT_HERSHEY_DUPLEX,
+            1,
+            (255, 255, 255, 255),
+            2,
+            cv2.LINE_AA,
+        )
+        return dummy
+
+    img = cv2.resize(img, (w, h))
+    # Kalau tidak ada alpha, tambahkan
+    if img.shape[2] == 3:
+        bgr = img
+        alpha = np.full((h, w, 1), 255, dtype=np.uint8)
+        img = np.concatenate([bgr, alpha], axis=2)
+    return img
+
+
+def overlay_png(bg, png, x, y):
+    """
+    Gambar PNG (BGRA) di atas background (BGR) dengan alpha blending.
+    (x, y) = posisi kiri-atas.
+    """
+    h, w, _ = png.shape
+
+    # Cek batas frame
+    if x < 0 or y < 0 or x + w > bg.shape[1] or y + h > bg.shape[0]:
+        return bg
+
+    roi = bg[y:y + h, x:x + w]
+
+    bgr = png[..., :3]
+    alpha = png[..., 3:] / 255.0  # (h,w,1)
+
+    roi = (alpha * bgr + (1 - alpha) * roi).astype(np.uint8)
+    bg[y:y + h, x:x + w] = roi
+    return bg
+
+
+def point_on_png_button(cx, cy, x, y, png):
+    """
+    Cek apakah titik (cx, cy) menyentuh tombol PNG dan bukan area transparan.
+    """
+    h, w, _ = png.shape
+
+    if not (x <= cx < x + w and y <= cy < y + h):
+        return False
+
+    local_x = cx - x
+    local_y = cy - y
+    alpha = png[local_y, local_x, 3]
+    return alpha > 10
