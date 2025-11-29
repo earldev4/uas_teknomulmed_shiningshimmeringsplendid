@@ -16,6 +16,7 @@ CAT_BUAH_PATH      = os.path.join("assets", "image", "buttons", "Kategori - Buah
 CAT_HEWAN_PATH     = os.path.join("assets", "image", "buttons", "Kategori - Hewan.png")
 CAT_KENDARAAN_PATH = os.path.join("assets", "image", "buttons", "Kategori - Kendaraan.png")
 PLAY_AGAIN_PATH    = os.path.join("assets", "image", "buttons", "Mainkan Lagi.png")
+PILIH_KATEGORI_PATH  = os.path.join("assets", "image", "buttons", "Pilih Kategori.png")
 
 # Folder semua tombol jawaban
 ANSWER_BUTTONS_DIR = os.path.join("assets", "image", "buttons")
@@ -198,6 +199,21 @@ def overlay_png(bg, png, x, y):
     bg[y:y + h, x:x + w] = roi
     return bg
 
+def draw_button_with_effect(frame, btn_img, base_x, base_y, fingertip,
+                            press_offset=8):
+    """
+    Gambar tombol. Kalau jari menyentuh tombol, tombol digambar sedikit
+    lebih atas (press_offset pixel).
+    Hitbox tetap di posisi base_x, base_y.
+    """
+    y_draw = base_y
+    if fingertip is not None:
+        if point_on_png_button(fingertip[0], fingertip[1], base_x, base_y, btn_img):
+            y_draw = base_y - press_offset  # efek naik
+
+    frame = overlay_png(frame, btn_img, base_x, y_draw)
+    return frame
+
 
 def point_on_png_button(cx, cy, x, y, png):
     h, w, _ = png.shape
@@ -331,6 +347,9 @@ CAT_BTN_SIZE = (380, 130)
 cat_buah_btn      = load_button_image(CAT_BUAH_PATH,      CAT_BTN_SIZE)
 cat_hewan_btn     = load_button_image(CAT_HEWAN_PATH,     CAT_BTN_SIZE)
 cat_kendaraan_btn = load_button_image(CAT_KENDARAAN_PATH, CAT_BTN_SIZE)
+
+# header khusus menu kategori
+kategori_header_btn = load_button_image(PILIH_KATEGORI_PATH, size=(400, 100))
 
 REPEAT_BTN_SIZE = (260, 80)
 repeat_audio_btn = load_button_image(REPEAT_AUDIO_PATH, REPEAT_BTN_SIZE)
@@ -476,11 +495,12 @@ while True:
 
     # ---------- STATE HOME ----------
     if state == STATE_HOME:
+        #
         frame = overlay_png(frame, header_btn, header_x, header_y)
 
         play_x = (w_frame - play_btn.shape[1]) // 2
         play_y = int(h_frame * 0.7)
-        frame = overlay_png(frame, play_btn, play_x, play_y)
+        frame = draw_button_with_effect(frame, play_btn, play_x, play_y, fingertip)
 
         if fingertip and can_interact():
             if point_on_png_button(fingertip[0], fingertip[1], play_x, play_y, play_btn):
@@ -491,6 +511,10 @@ while True:
 
     # ---------- STATE CATEGORY ----------
     elif state == STATE_CATEGORY:
+        # header "Pilih Kategori" di posisi sama seperti "Guess The Word"
+        cat_header_x = (w_frame - kategori_header_btn.shape[1]) // 2
+        frame = overlay_png(frame, kategori_header_btn, cat_header_x, header_y)
+
         buttons = [
             ("hewan", cat_hewan_btn),
             ("buah",  cat_buah_btn),
@@ -503,7 +527,7 @@ while True:
 
         x = start_x
         for key, btn_img in buttons:
-            frame = overlay_png(frame, btn_img, x, y)
+            frame = draw_button_with_effect(frame, btn_img, x, y, fingertip)
 
             if fingertip and can_interact():
                 if point_on_png_button(fingertip[0], fingertip[1], x, y, btn_img):
@@ -578,7 +602,7 @@ while True:
                 img  = btn["img"]
                 word = btn["word"]
 
-                frame = overlay_png(frame, img, x, y_btn)
+                frame = draw_button_with_effect(frame, img, x, y_btn, fingertip)
 
                 if (not question_answered) and fingertip and can_interact():
                     if point_on_png_button(fingertip[0], fingertip[1], x, y_btn, img):
@@ -605,7 +629,7 @@ while True:
             rx = w_frame - repeat_audio_btn.shape[1] - 30
             ry = 30
 
-            frame = overlay_png(frame, repeat_audio_btn, rx, ry)
+            frame = draw_button_with_effect(frame, repeat_audio_btn, rx, ry, fingertip)
 
             if fingertip and can_interact():
                 if point_on_png_button(fingertip[0], fingertip[1], rx, ry, repeat_audio_btn):
@@ -667,7 +691,8 @@ while True:
         btn_x = (w_frame - play_again_btn.shape[1]) // 2
         btn_y = int(h_frame * 0.72)
 
-        frame = overlay_png(frame, play_again_btn, btn_x, btn_y)
+        frame = draw_button_with_effect(frame, play_again_btn, btn_x, btn_y, fingertip)
+
 
         if fingertip and can_interact():
             if point_on_png_button(fingertip[0], fingertip[1], btn_x, btn_y, play_again_btn):
