@@ -1,7 +1,7 @@
 import os
 import pygame
 
-from config import (
+from .config import (
     BGM_MENU_PATH,
     SFX_CLICK_PATH,
     SFX_CORRECT_PATH,

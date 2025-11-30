@@ -2,9 +2,9 @@ import os
 import random
 import pygame
 
-from config import CATEGORY_DATA
-from audio_manager import AUDIO_OK
-from utils import now_ms
+from .config import CATEGORY_DATA
+from .audio_manager import AUDIO_OK
+from .utils import now_ms
 
 def build_questions_for_category(cat_key):
     """

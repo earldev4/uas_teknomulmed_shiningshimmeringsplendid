@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-from config import ANSWER_BUTTONS_DIR
+from .config import ANSWER_BUTTONS_DIR
 
 # =========================
 # FUNGSI GRAFIS & BUTTON

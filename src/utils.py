@@ -1,5 +1,5 @@
 import time
-from config import BUTTON_COOLDOWN_MS
+from .config import BUTTON_COOLDOWN_MS
 
 last_hit_time = 0  # timestamp terakhir kena klik
 

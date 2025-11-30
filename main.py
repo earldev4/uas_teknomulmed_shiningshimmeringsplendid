@@ -3,7 +3,7 @@ import mediapipe as mp
 import numpy as np
 import pygame  # untuk quit mixer di akhir
 
-from config import (
+from src.config import (
     WINDOW_NAME,
     HEADER_BUTTON_PATH, PLAY_BUTTON_PATH,
     CAT_BUAH_PATH, CAT_HEWAN_PATH, CAT_KENDARAAN_PATH,
@@ -12,19 +12,19 @@ from config import (
     STATE_HOME, STATE_CATEGORY, STATE_GAME, STATE_RESULT,
     QUESTION_DELAY_MS,
 )
-from audio_manager import (
+from src.audio_manager import (
     play_click_sfx, play_correct, play_wrong,
     update_bgm_for_state, AUDIO_OK,
 )
-from graphics import (
+from src.graphics import (
     load_button_image, overlay_png, draw_button_with_effect,
     point_on_png_button, put_text_with_outline,
     load_all_answer_assets,
 )
-from game_logic import (
+from src.game_logic import (
     build_questions_for_category, setup_question,
 )
-from utils import now_ms, can_interact, set_cooldown
+from src.utils import now_ms, can_interact, set_cooldown
 
 # =========================
 # LOAD ASSET IMAGE
