@@ -14,6 +14,7 @@ from src.config import (
 )
 from src.audio_manager import (
     play_click_sfx, play_correct, play_wrong,
+    play_applause, play_boo,
     update_bgm_for_state, AUDIO_OK,
 )
 from src.graphics import (
@@ -67,6 +68,7 @@ question_sound = None
 question_start_time = 0
 audio_initial_played = False
 repeat_used = False
+result_sound_played = False
 
 question_answered = False
 question_transition_deadline = None
@@ -318,6 +320,15 @@ while True:
 
     # ---------- STATE RESULT ----------
     elif state == STATE_RESULT:
+        if not result_sound_played:
+            if score >= 8:      # nilai di atas 7
+                play_applause()
+                print("[RESULT] Applause!")
+            else:
+                play_boo()
+                print("[RESULT] Boo!")
+            result_sound_played = True
+
         put_text_with_outline(
             frame,
             "Kuis Selesai!",
@@ -371,6 +382,7 @@ while True:
                 question_sound = None
                 audio_initial_played = False
                 repeat_used = False
+                result_sound_played = False
                 question_answered = False
                 question_transition_deadline = None
 

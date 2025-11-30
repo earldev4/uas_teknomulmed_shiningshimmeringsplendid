@@ -23,6 +23,8 @@ BGM_MENU_PATH     = os.path.join("assets", "audio", "BG NCS.mp3")
 SFX_CLICK_PATH    = os.path.join("assets", "audio", "Button Pressed.mp3")
 SFX_CORRECT_PATH  = os.path.join("assets", "audio", "Correct.mp3")
 SFX_WRONG_PATH    = os.path.join("assets", "audio", "Wrong.mp3")
+SFX_APPLAUSE_PATH = os.path.join("assets", "audio", "Applause.mp3")
+SFX_BOO_PATH      = os.path.join("assets", "audio", "Boo.mp3")
 
 # Root audio soal
 PITCH_AUDIO_ROOT = os.path.join("pitch_audio")

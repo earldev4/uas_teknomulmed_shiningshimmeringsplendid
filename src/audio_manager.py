@@ -8,6 +8,8 @@ from .config import (
     SFX_WRONG_PATH,
     STATE_HOME,
     STATE_CATEGORY,
+    SFX_APPLAUSE_PATH, 
+    SFX_BOO_PATH
 )
 
 AUDIO_OK = False
@@ -15,6 +17,9 @@ bgm_available = False
 click_sfx = None
 correct_sfx = None
 wrong_sfx = None
+applause_sfx = None
+boo_sfx = None
+
 
 # =========================
 # INIT AUDIO
@@ -44,6 +49,16 @@ try:
         wrong_sfx = pygame.mixer.Sound(SFX_WRONG_PATH)
     else:
         print("[AUDIO] File SFX salah tidak ditemukan.")
+    
+    if os.path.exists(SFX_APPLAUSE_PATH):
+        applause_sfx = pygame.mixer.Sound(SFX_APPLAUSE_PATH)
+    else:
+        print("[AUDIO] File applause tidak ditemukan.")
+
+    if os.path.exists(SFX_BOO_PATH):
+        boo_sfx = pygame.mixer.Sound(SFX_BOO_PATH)
+    else:
+        print("[AUDIO] File boo tidak ditemukan.")
 
 except Exception as e:
     print("[AUDIO] Gagal inisialisasi audio:", e)
@@ -64,6 +79,13 @@ def play_wrong():
     if AUDIO_OK and wrong_sfx is not None:
         wrong_sfx.play()
 
+def play_applause():
+    if AUDIO_OK and applause_sfx is not None:
+        applause_sfx.play()
+
+def play_boo():
+    if AUDIO_OK and boo_sfx is not None:
+        boo_sfx.play()
 
 def update_bgm_for_state(state):
     if not (AUDIO_OK and bgm_available):
