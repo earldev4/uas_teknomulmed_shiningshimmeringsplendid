@@ -239,9 +239,7 @@ Laporan akhir proyek dapat diakses melalui:
 (link ke laporan akhir)
 
 ## 📋 Demo Program
-## 📋 Demo Program
-
-Tabel ini menunjukkan alur permainan dari layar utama hingga akhir permainan.
+Berikut demo program dari filter/game Guess The Word!
 
 <table>
   <tr>
