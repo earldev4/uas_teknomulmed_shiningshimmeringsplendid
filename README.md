@@ -145,11 +145,24 @@ python main.py
 </ol>
 
 ## 📋 Logbook Mingguan
-|           LOGBOOK CATATAN HARIAN TUBES        |
-| Judul Kolom 1 | Judul Kolom 2 | Judul Kolom 3 |
+| Tanggal | Kontributor | Pekerjaan |
 | ------------- |:-------------:| -------------:|
-| Baris 1, Kolom 1 | Baris 1, Kolom 2 | Baris 1, Kolom 3 |
-| Baris 2, Kolom 1 | Baris 2, Kolom 2 | Baris 2, Kolom 3 |
+| 27 Oktober 2025 | Deva | Mengajukan topik TA di Grup WA Kelas |
+| 28 Oktober 2025 | Deva | Membuat Github Proyek |
+| | Arkan | Membuat file audio_code.py, hand_masking.py, main.py dan membuat UI untuk filter |
+| 11 November 2025 | Arkan | Membuat dan mengumpulkan data audio serta menambah file audio_processing.py |
+| 22 November 2025 | Arkan | Memproses data audio dengan menaikkan pitch kemudian hasil audio yang di pitch disimpan ke folder pitch_audio |
+| 23 November 2025 | Arkan | Membuat hand masking menggunakan mediapipe |
+| 24 November 2025 | Deva | Membuat readme github, Mengubah kode hand masking, Membuat button |
+| 26 November 2025 | Deva | Membuat laporan proyek dan memperbarui readme |
+| | Faris | Membuat laporan proyek akhir, Membuat logbook kegiatan proyek akhir, Update code game state structure visualisasi tangan dengan landmark |
+| 27 November 2025 | Faris | Update sistem tombol interaktif dan transisi MENU ke CATEGORY, Update tiga tombol kategori dengan navigasi dan penyimpanan pilihan, update data kata; audio Pygame; dan pemutaran audio soal, update opsi jawaban, cek benar/salah, skor, dan soal baru, update feedback visual, timer, dukungan PNG, dan image overlay |
+| 28 November 2025 | Faris | Update final 10 kata/kategori, tombol BACK; RESET SKOR; dan kontrol audio, Membuat demo program |
+| | Deva | Rename audio, membangun code di file main.py |
+| 29 November 2025 | Deva | Membuat edek button ketika ditekan |
+| 30 November 2025 | Deva | Split File dan pembagian ke beberapa modul |
+| 1 Desember 2025 | Deva | Melanjutkan laporan proyek, Melanjutkan readme repository |
+| 2 Desember 2025 | Arkan | Update readme repository |
 
 ## 📋 Laporan
 ## 📋 Demo Program
