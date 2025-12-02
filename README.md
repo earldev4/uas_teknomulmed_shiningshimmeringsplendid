@@ -145,6 +145,11 @@ python main.py
 </ol>
 
 ## 📋 Logbook Mingguan
+| Judul Kolom 1 | Judul Kolom 2 | Judul Kolom 3 |
+| ------------- |:-------------:| -------------:|
+| Baris 1, Kolom 1 | Baris 1, Kolom 2 | Baris 1, Kolom 3 |
+| Baris 2, Kolom 1 | Baris 2, Kolom 2 | Baris 2, Kolom 3 |
+
 ## 📋 Laporan
 ## 📋 Demo Program
 
