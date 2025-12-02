@@ -236,7 +236,7 @@ python main.py
 
 ## 📋 Laporan
 Laporan akhir proyek dapat diakses melalui:
-(link ke laporan akhir)
+<a href="https://drive.google.com/drive/folders/1MjicT_aroplbszJnmByogowQ1uWOBIKS?usp=drive_link">Laporan</a><br/>
 
 ## 📋 Demo Program
 Berikut demo program dari filter/game Guess The Word!
