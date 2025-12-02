@@ -145,24 +145,94 @@ python main.py
 </ol>
 
 ## 📋 Logbook Mingguan
-| Tanggal | Kontributor | Pekerjaan |
-| ------------- |:-------------:| -------------:|
-| 27 Oktober 2025 | Deva | Mengajukan topik TA di Grup WA Kelas |
-| 28 Oktober 2025 | Deva | Membuat Github Proyek |
-| | Arkan | Membuat file audio_code.py, hand_masking.py, main.py dan membuat UI untuk filter |
-| 11 November 2025 | Arkan | Membuat dan mengumpulkan data audio serta menambah file audio_processing.py |
-| 22 November 2025 | Arkan | Memproses data audio dengan menaikkan pitch kemudian hasil audio yang di pitch disimpan ke folder pitch_audio |
-| 23 November 2025 | Arkan | Membuat hand masking menggunakan mediapipe |
-| 24 November 2025 | Deva | Membuat readme github, Mengubah kode hand masking, Membuat button |
-| 26 November 2025 | Deva | Membuat laporan proyek dan memperbarui readme |
-| | Faris | Membuat laporan proyek akhir, Membuat logbook kegiatan proyek akhir, Update code game state structure visualisasi tangan dengan landmark |
-| 27 November 2025 | Faris | Update sistem tombol interaktif dan transisi MENU ke CATEGORY, Update tiga tombol kategori dengan navigasi dan penyimpanan pilihan, update data kata; audio Pygame; dan pemutaran audio soal, update opsi jawaban, cek benar/salah, skor, dan soal baru, update feedback visual, timer, dukungan PNG, dan image overlay |
-| 28 November 2025 | Faris | Update final 10 kata/kategori, tombol BACK; RESET SKOR; dan kontrol audio, Membuat demo program |
-| | Deva | Rename audio, membangun code di file main.py |
-| 29 November 2025 | Deva | Membuat edek button ketika ditekan |
-| 30 November 2025 | Deva | Split File dan pembagian ke beberapa modul |
-| 1 Desember 2025 | Deva | Melanjutkan laporan proyek, Melanjutkan readme repository |
-| 2 Desember 2025 | Arkan | Update readme repository |
+<table>
+  <thead>
+    <tr>
+      <th>Tanggal</th>
+      <th>Kontributor</th>
+      <th>Pekerjaan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>27 Oktober 2025</td>
+      <td align="center">Deva</td>
+      <td>Mengajukan topik TA di Grup WA Kelas</td>
+    </tr>
+    <tr>
+      <td rowspan="2">28 Oktober 2025</td>
+      <td align="center">Deva</td>
+      <td>Membuat Github Proyek</td>
+    </tr>
+    <tr>
+      <td align="center">Arkan</td>
+      <td>Membuat file audio_code.py, hand_masking.py, main.py dan membuat UI untuk filter</td>
+    </tr>
+    <tr>
+      <td>11 November 2025</td>
+      <td align="center">Arkan</td>
+      <td>Membuat dan mengumpulkan data audio serta menambah file audio_processing.py</td>
+    </tr>
+    <tr>
+      <td>22 November 2025</td>
+      <td align="center">Arkan</td>
+      <td>Memproses data audio dengan menaikkan pitch kemudian hasil audio yang di pitch disimpan ke folder pitch_audio</td>
+    </tr>
+    <tr>
+      <td>23 November 2025</td>
+      <td align="center">Arkan</td>
+      <td>Membuat hand masking menggunakan mediapipe</td>
+    </tr>
+    <tr>
+      <td>24 November 2025</td>
+      <td align="center">Deva</td>
+      <td>Membuat readme github, Mengubah kode hand masking, Membuat button</td>
+    </tr>
+    <tr>
+      <td rowspan="2">26 November 2025</td>
+      <td align="center">Deva</td>
+      <td>Membuat laporan proyek dan memperbarui readme</td>
+    </tr>
+    <tr>
+      <td align="center">Faris</td>
+      <td>Membuat laporan proyek akhir, Membuat logbook kegiatan proyek akhir, Update code game state structure visualisasi tangan dengan landmark</td>
+    </tr>
+    <tr>
+      <td>27 November 2025</td>
+      <td align="center">Faris</td>
+      <td>Update sistem tombol interaktif dan transisi MENU ke CATEGORY, Update tiga tombol kategori dengan navigasi dan penyimpanan pilihan, update data kata; audio Pygame; dan pemutaran audio soal, update opsi jawaban, cek benar/salah, skor, dan soal baru, update feedback visual, timer, dukungan PNG, dan image overlay</td>
+    </tr>
+    <tr>
+      <td rowspan="2">28 November 2025</td>
+      <td align="center">Faris</td>
+      <td>Update final 10 kata/kategori, tombol BACK; RESET SKOR; dan kontrol audio, Membuat demo program</td>
+    </tr>
+    <tr>
+      <td align="center">Deva</td>
+      <td>Rename audio, membangun code di file main.py</td>
+    </tr>
+    <tr>
+      <td>29 November 2025</td>
+      <td align="center">Deva</td>
+      <td>Membuat edek button ketika ditekan</td>
+    </tr>
+    <tr>
+      <td>30 November 2025</td>
+      <td align="center">Deva</td>
+      <td>Split File dan pembagian ke beberapa modul</td>
+    </tr>
+    <tr>
+      <td>1 Desember 2025</td>
+      <td align="center">Deva</td>
+      <td>Melanjutkan laporan proyek, Melanjutkan readme repository</td>
+    </tr>
+    <tr>
+      <td>2 Desember 2025</td>
+      <td align="center">Arkan</td>
+      <td>Update readme repository</td>
+    </tr>
+  </tbody>
+</table>
 
 ## 📋 Laporan
 ## 📋 Demo Program
