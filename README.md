@@ -145,6 +145,7 @@ python main.py
 </ol>
 
 ## 📋 Logbook Mingguan
+|           LOGBOOK CATATAN HARIAN TUBES        |
 | Judul Kolom 1 | Judul Kolom 2 | Judul Kolom 3 |
 | ------------- |:-------------:| -------------:|
 | Baris 1, Kolom 1 | Baris 1, Kolom 2 | Baris 1, Kolom 3 |
