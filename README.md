@@ -239,6 +239,6 @@ Laporan akhir proyek dapat diakses melalui:
 (link ke laporan akhir)
 
 ## 📋 Demo Program
-<img src="assets/image/home.jpg" width="180"/><br/>
-<img src="assets/image/in_game.jpg" width="180"/><br/>
-<img src="assets/image/end_game.jpg" width="180"/><br/>
+<img src="assets/image/home.jpg" width="auto"/><br/>
+<img src="assets/image/in_game.jpg" width="auto"/><br/>
+<img src="assets/image/end_game.jpg" width="auto"/><br/>
