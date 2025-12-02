@@ -239,6 +239,19 @@ Laporan akhir proyek dapat diakses melalui:
 (link ke laporan akhir)
 
 ## 📋 Demo Program
-<img src="assets/image/home.jpg" width="auto"/><br/>
-<img src="assets/image/in_game.jpg" width="auto"/><br/>
-<img src="assets/image/end_game.jpg" width="auto"/><br/>
+## 📋 Demo Program
+
+Tabel ini menunjukkan alur permainan dari layar utama hingga akhir permainan.
+
+<table>
+  <tr>
+    <td align="center"><b>Layar Utama (Home)</b></td>
+    <td align="center"><b>Dalam Permainan (In Game)</b></td>
+    <td align="center"><b>Permainan Berakhir (End Game)</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/image/home.jpg" alt="Home Screen" width="100%"/></td>
+    <td><img src="assets/image/in_game.jpg" alt="In Game Screen" width="100%"/></td>
+    <td><img src="assets/image/end_game.jpg" alt="End Game Screen" width="100%"/></td>
+  </tr>
+</table>
