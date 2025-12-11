@@ -240,6 +240,7 @@ Laporan akhir proyek dapat diakses melalui:
 
 ## 📋 Demo Program
 Berikut demo program dari filter/game Guess The Word!
+[LINK VIDEO DEMO](https://drive.google.com/file/d/1sG30zwn60DGHJiIT00A7HGt_WrPdC90v/view?usp=sharing)
 
 <table>
   <tr>
